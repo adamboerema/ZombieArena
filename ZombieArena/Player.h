@@ -15,7 +15,6 @@ private:
 	IntRect arena;
 	Time lastHit;
 
-	int arena;
 	int tileSize;
 	int health;
 	int maxHealth;
