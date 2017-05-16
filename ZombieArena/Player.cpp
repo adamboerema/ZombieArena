@@ -71,7 +71,7 @@ Time Player::getLastHitTime() {
 }
 
 bool Player::hit(Time timeHit) {
-	if (timeHit.asMilliseconds - lastHit.asMilliseconds() > 200) {
+	if (timeHit.asMilliseconds() - lastHit.asMilliseconds() > 200) {
 		lastHit = timeHit;
 		health -= 10;
 		return true;
@@ -131,4 +131,20 @@ void Player::stopUp() {
 
 void Player::stopDown() {
 	downPressed = false;
+}
+
+void Player::upgradeSpeed() {
+	//20% speed upgrade
+	speed += (START_SPEED * .2);
+}
+
+void Player::upgradeHealth() {
+	maxHealth += (START_HEALTH * .2);
+}
+
+void Player::increaseHealthLevel(int amount) {
+	health += amount;
+	if (health > maxHealth) {
+		health = maxHealth;
+	}
 }
