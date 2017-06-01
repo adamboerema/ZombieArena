@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Player.h"
+#include "ZombieArena.h"
 #include "SFML/Graphics.hpp"
 
 using namespace std;
@@ -24,6 +25,11 @@ int main() {
 	Vector2i mouseScreenPosition;
 	Player player;
 	IntRect arena;
+
+	//Load background vertex array
+	Texture textureBackground;
+	VertexArray background;
+	textureBackground.loadFromFile("graphics/background_sheet.png");
 
 	while (window.isOpen()) {
 		Event event;
@@ -126,7 +132,7 @@ int main() {
 				arena.left = 0;
 				arena.top = 0;
 
-				int tileSize = 50;
+				int tileSize = createBackground(background, arena);
 				
 				//Spawn in middle of arena
 				player.spawn(arena, resolution, tileSize);
@@ -138,7 +144,7 @@ int main() {
 
 		if (state == State::PLAYING) {
 			//Update delta time
-			Time dt = clock.restart();
+			Time dt = clock.restart(); 
 
 			//Update the total game time
 			gameTimeTotal += dt;
@@ -160,6 +166,7 @@ int main() {
 		if (state == State::PLAYING) {
 			window.clear();
 			window.setView(mainView);
+			window.draw(background, &textureBackground);
 			window.draw(player.getSprite());
 		}
 

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ZombieArena.h"
 
-int createBackground(VertexArray &arenaVertices, IntRect arena) {
+int createBackground(VertexArray& arenaVertices, IntRect arena) {
 	const int TILE_SIZE = 50;
 	const int TILE_TYPES = 3;
 	const int VERTS_IN_QUAD = 4;
@@ -13,24 +13,24 @@ int createBackground(VertexArray &arenaVertices, IntRect arena) {
 	arenaVertices.setPrimitiveType(Quads);
 	arenaVertices.resize(worldWidth * worldHeight * VERTS_IN_QUAD);
 
-	for (int i = 0; i < worldWidth; i++) {
-		for (int j = 0; j < worldHeight; j++) {
+	for (int w = 0; w < worldWidth; w++) {
+		for (int h = 0; h < worldHeight; h++) {
 			//Position each vertex in quad
 			arenaVertices[currentVertex + 0].position 
-				= Vector2f((i * TILE_SIZE) + TILE_SIZE, j * TILE_SIZE);
+				= Vector2f(w * TILE_SIZE, h * TILE_SIZE);
 			
 			arenaVertices[currentVertex + 1].position
-				= Vector2f((i * TILE_SIZE) + TILE_SIZE, (j * TILE_SIZE) + TILE_SIZE);
+				= Vector2f((w * TILE_SIZE) + TILE_SIZE, h * TILE_SIZE);
 
 			arenaVertices[currentVertex + 2].position
-				= Vector2f((i * TILE_SIZE) + TILE_SIZE, (j * TILE_SIZE) + TILE_SIZE);
+				= Vector2f((w * TILE_SIZE) + TILE_SIZE, (h * TILE_SIZE) + TILE_SIZE);
 
 			arenaVertices[currentVertex + 3].position
-				= Vector2f((i * TILE_SIZE), (j * TILE_SIZE) + TILE_SIZE);
+				= Vector2f(w * TILE_SIZE, (h * TILE_SIZE) + TILE_SIZE);
 
 			//Define the position in the Texture for current quad
-			if (j == 0 || j == worldHeight - 1
-				|| i == 0 || i == worldWidth - 1) {
+			if (h == 0 || h == worldHeight - 1
+				|| w == 0 || w == worldWidth - 1) {
 
 				arenaVertices[currentVertex + 0].texCoords
 					= Vector2f(0, TILE_TYPES * TILE_SIZE);
@@ -45,7 +45,7 @@ int createBackground(VertexArray &arenaVertices, IntRect arena) {
 					= Vector2f(0, TILE_SIZE + TILE_TYPES * TILE_SIZE);
 			}
 			else {
-				srand((int)time_t(0) + j * i - j);
+				srand((int)time_t(0) + h * w - h);
 				int randomIndex = (rand() % TILE_TYPES);
 				int verticalOffset = randomIndex * TILE_SIZE;
 
