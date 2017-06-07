@@ -16,7 +16,7 @@ private:
 
 public:
 	TextureHolder();
-	static Texture& GetTexture(String const& filename);
+	static Texture& GetTexture(string const& filename);
 };
 
 #endif // TEXTURE_HOLDER_H
