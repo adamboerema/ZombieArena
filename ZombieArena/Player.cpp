@@ -1,13 +1,13 @@
 #include "stdafx.h"
 #include "Player.h"
+#include "TextureHolder.h"
 
 Player::Player() {
 	speed = START_SPEED;
 	health = START_HEALTH;
 	maxHealth = START_HEALTH;
 
-	texture.loadFromFile("graphics/player.png");
-	sprite.setTexture(texture);
+	sprite = Sprite(TextureHolder::GetTexture("graphics/player.png"));
 	sprite.setOrigin(25, 25);
 }
 
