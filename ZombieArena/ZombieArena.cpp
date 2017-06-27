@@ -56,6 +56,8 @@ int main() {
 
 	Pickup healthPickup(1);
 	Pickup ammoPickup(2);
+	int score = 0;
+	int highScore = 0;
 
 	while (window.isOpen()) {
 		Event event;
@@ -245,7 +247,57 @@ int main() {
 
 			healthPickup.update(dtAsSeconds);
 			ammoPickup.update(dtAsSeconds);
-		}
+
+			//Collision detection
+			for (int i = 0; i < 100; i++) {
+				for (int j = 0; j < numZombies; j++) {
+					//Check if bullet is going to hit zombie
+					if (bullets[i].isInFlight()
+						&& zombies[j].isAlive()) {
+
+						if (bullets[i].getPosition()
+							.intersects(zombies[j].gePosition())) {
+							bullets[i].stop();
+
+							if (zombies[j].hit()) {
+								score += 10;
+
+								if (score >= highScore) {
+									highScore = score;
+								}
+								numZombiesAlive--;
+								
+								if (numZombiesAlive == 0) {
+									state = State::LEVELING_UP;
+								}
+							}
+						}
+					}
+				}
+			} // End zombie being shot
+
+			for (int i = 0; i < numZombies; i++) {
+				if (player.getPosition().intersects(zombies[i].gePosition())
+					&& zombies[i].isAlive()) {
+					if (player.hit(gameTimeTotal)) {
+					
+					}
+					if (player.getHealth() <= 0) {
+						state = State::GAME_OVER;
+					}
+				}
+			} // End player touched
+
+			if (player.getPosition()
+				.intersects(healthPickup.getPosition()) && healthPickup.isSpawned()) {
+				player.increaseHealthLevel(healthPickup.gotIt());
+			}
+
+			if (player.getPosition().intersects(ammoPickup.getPosition())
+				&& ammoPickup.isSpawned()) {
+				bulletsSpare += ammoPickup.gotIt();
+			}
+		} // End updating the scene
 
 		//Draw the scene
 		if (state == State::PLAYING) {
