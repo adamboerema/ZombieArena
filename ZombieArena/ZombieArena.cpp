@@ -4,6 +4,7 @@
 #include "SFML/Graphics.hpp"
 #include "TextureHolder.h"
 #include "Bullet.h"
+#include "Pickup.h"
 
 using namespace std;
 
@@ -52,6 +53,9 @@ int main() {
 	Texture textureCrosshair = TextureHolder::GetTexture("graphics/crosshair.png");
 	spriteCrosshair.setTexture(textureCrosshair);
 	spriteCrosshair.setOrigin(25, 25);
+
+	Pickup healthPickup(1);
+	Pickup ammoPickup(2);
 
 	while (window.isOpen()) {
 		Event event;
@@ -190,6 +194,9 @@ int main() {
 				//Spawn in middle of arena
 				player.spawn(arena, resolution, tileSize);
 
+				healthPickup.setArena(arena);
+				ammoPickup.setArena(arena);
+
 				//Create a horde of zombies
 				numZombies = 10;
 				delete[] zombies;
@@ -235,6 +242,9 @@ int main() {
 					bullets[i].update(dtAsSeconds);
 				}
 			}
+
+			healthPickup.update(dtAsSeconds);
+			ammoPickup.update(dtAsSeconds);
 		}
 
 		//Draw the scene
@@ -252,7 +262,18 @@ int main() {
 					window.draw(bullets[i].getShape());
 				}
 			}
+
+			//Draw player
 			window.draw(player.getSprite());
+
+			if (ammoPickup.isSpawned()) {
+				window.draw(ammoPickup.getSprite());
+			}
+
+			if (healthPickup.isSpawned()) {
+				window.draw(healthPickup.getSprite());
+			}
+
 			window.draw(spriteCrosshair);
 		}
 

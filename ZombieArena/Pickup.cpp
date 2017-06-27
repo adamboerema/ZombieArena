@@ -20,18 +20,18 @@ Pickup::Pickup(int type) {
 }
 
 void Pickup::setArena(IntRect arena) {
-	arena.left = arena.left + 50;
-	arena.width = arena.width - 50;
-	arena.top = arena.top + 50;
-	arena.height = arena.height - 50;
+	this->arena.left = arena.left + 50;
+	this->arena.width = arena.width - 50;
+	this->arena.top = arena.top + 50;
+	this->arena.height = arena.height - 50;
 	spawn();
 }
 
 void Pickup::spawn() {
 	srand((int)time(0) / type);
-	int x = (rand() % arena.width);
+	int x = (rand() % this->arena.width);
 	srand((int)time(0) * type);
-	int y = (rand() % arena.height);
+	int y = (rand() % this->arena.height);
 
 	secondsSinceSpawn = 0;
 	spawned = true;
