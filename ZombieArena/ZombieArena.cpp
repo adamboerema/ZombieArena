@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "ZombieArena.h"
 #include "SFML/Graphics.hpp"
+#include "SFML/Audio.hpp"
 #include "TextureHolder.h"
 #include "Bullet.h"
 #include "Pickup.h"
@@ -123,6 +124,12 @@ int main() {
 	scoreText.setFillColor(Color::White);
 	scoreText.setPosition(20, 0);
 
+	std::ifstream inputFile("gamedata/scores.txt");
+	if (inputFile.is_open()) {
+		inputFile >> highScore;
+		inputFile.close();
+	}
+
 	//High Score
 	Text highScoreText;
 	highScoreText.setFont(font);
@@ -158,6 +165,42 @@ int main() {
 	int framesSinceLastHUDUpdate = 0;
 	int fpsMeasurementFrameInterval = 1000;
 
+	SoundBuffer hitBuffer;
+	hitBuffer.loadFromFile("sound/hit.wav");
+
+	Sound hit;
+	hit.setBuffer(hitBuffer);
+
+	SoundBuffer splatBuffer;
+	splatBuffer.loadFromFile("sound/splat.wav");
+	Sound splat;
+	splat.setBuffer(splatBuffer);
+
+	SoundBuffer shootBuffer;
+	shootBuffer.loadFromFile("sound/shoot.wav");
+	Sound shoot;
+	shoot.setBuffer(shootBuffer);
+
+	SoundBuffer reloadBuffer;
+	reloadBuffer.loadFromFile("sound/reload.wav");
+	Sound reload;
+	reload.setBuffer(reloadBuffer);
+
+	SoundBuffer reloadFailedBuffer;
+	reloadFailedBuffer.loadFromFile("sound/reload_failed.wav");
+	Sound reloadFailed;
+	reloadFailed.setBuffer(reloadFailedBuffer);
+
+	SoundBuffer powerupBuffer;
+	powerupBuffer.loadFromFile("sound/powerup.wav");
+	Sound powerup;
+	powerup.setBuffer(powerupBuffer);
+
+	SoundBuffer pickupBuffer;
+	pickupBuffer.loadFromFile("sound/pickup.wav");
+	Sound pickup;
+	pickup.setBuffer(pickupBuffer);
+
 	while (window.isOpen()) {
 		Event event;
 		while (window.pollEvent(event)) {
@@ -180,6 +223,17 @@ int main() {
 				else if (event.key.code == Keyboard::Return
 					&& state == State::GAME_OVER) {
 					state = State::LEVELING_UP;
+
+					//Restart
+					wave = 0;
+					score = 0;
+					currentBullet = 0;
+					bulletsSpare = 24;
+					bulletsInClip = 6;
+					clipSize = 6;
+					fireRate = 1;
+
+					player.resetPlayerState();
 				}
 
 				if (state == State::PLAYING) {
@@ -188,13 +242,15 @@ int main() {
 						if (bulletsSpare >= clipSize) {
 							bulletsInClip = clipSize;
 							bulletsSpare -= clipSize;
+							reload.play();
 						}
 						else if (bulletsSpare > 0) {
 							bulletsInClip = bulletsSpare;
 							bulletsSpare = 0;
+							reload.play();
 						}
 						else {
-							
+							reloadFailed.play();
 						}
 					}
 				}
@@ -240,7 +296,7 @@ int main() {
 				player.stopRight();
 			}
 
-			if (Mouse::isButtonPressed(sf::Mouse::Left)) {
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 				if (gameTimeTotal.asMilliseconds() - lastPressed.asMilliseconds() > 1000 / fireRate
 					&& bulletsInClip > 0) {
 					bullets[currentBullet].shoot(
@@ -254,6 +310,7 @@ int main() {
 						currentBullet = 0;
 					}
 					lastPressed = gameTimeTotal;
+					shoot.play();
 					bulletsInClip--;
 				}
 			} //End fire a bullet
@@ -261,32 +318,40 @@ int main() {
 
 		if (state == State::LEVELING_UP) {
 			if (event.key.code == Keyboard::Num1) {
+				fireRate++;
 				state = State::PLAYING;
 			}
 
 			if (event.key.code == Keyboard::Num2) {
+				clipSize += clipSize;
 				state = State::PLAYING;
 			}
 
 			if (event.key.code == Keyboard::Num3) {
+				player.upgradeHealth();
 				state = State::PLAYING;
 			}
 
 			if (event.key.code == Keyboard::Num4) {
+				player.upgradeSpeed();
 				state = State::PLAYING;
 			}
 
 			if (event.key.code == Keyboard::Num5) {
+				healthPickup.upgrade();
 				state = State::PLAYING;
 			}
 
 			if (event.key.code == Keyboard::Num6) {
+				ammoPickup.upgrade();
 				state = State::PLAYING;
 			}
 
 			if (state == State::PLAYING) {
-				arena.width = 500;
-				arena.height = 500;
+				wave++;
+
+				arena.width = 500 * wave;
+				arena.height = 500 * wave;
 				arena.left = 0;
 				arena.top = 0;
 
@@ -299,10 +364,13 @@ int main() {
 				ammoPickup.setArena(arena);
 
 				//Create a horde of zombies
-				numZombies = 10;
+				numZombies = 5 * wave;
 				delete[] zombies;
 				zombies = createHorde(numZombies, arena);
 				numZombiesAlive = numZombies;
+
+				//Play powerup sound
+				powerup.play();
 
 				//Reset the clock so there isn't a frame jump
 				clock.restart();
@@ -370,6 +438,7 @@ int main() {
 									state = State::LEVELING_UP;
 								}
 							}
+							splat.play();
 						}
 					}
 				}
@@ -383,6 +452,10 @@ int main() {
 					}
 					if (player.getHealth() <= 0) {
 						state = State::GAME_OVER;
+
+						std::ofstream outputFIle("gamedata/scores.txt");
+						outputFIle << highScore;
+						outputFIle.close();
 					}
 				}
 			} // End player touched
@@ -390,11 +463,13 @@ int main() {
 			if (player.getPosition()
 				.intersects(healthPickup.getPosition()) && healthPickup.isSpawned()) {
 				player.increaseHealthLevel(healthPickup.gotIt());
+				pickup.play();
 			}
 
 			if (player.getPosition().intersects(ammoPickup.getPosition())
 				&& ammoPickup.isSpawned()) {
 				bulletsSpare += ammoPickup.gotIt();
+				reload.play();
 			}
 
 			//Size up the health bar
